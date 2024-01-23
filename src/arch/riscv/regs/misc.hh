@@ -237,6 +237,8 @@ enum MiscRegIndex
     MISCREG_HPMCOUNTER30H,
     MISCREG_HPMCOUNTER31H,
 
+    MISCREG_UPKRU,
+
     NUM_MISCREGS
 };
 
@@ -253,6 +255,7 @@ enum CSRIndex
     CSR_UCAUSE = 0x042,
     CSR_UTVAL = 0x043,
     CSR_UIP = 0x044,
+    CSR_UPKRU = 0x048,
     CSR_FFLAGS = 0x001,
     CSR_FRM = 0x002,
     CSR_FCSR = 0x003,
@@ -500,6 +503,7 @@ const std::unordered_map<int, CSRMetadata> CSRData = {
     {CSR_UCAUSE, {"ucause", MISCREG_UCAUSE, rvTypeFlags(RV64, RV32)}},
     {CSR_UTVAL, {"utval", MISCREG_UTVAL, rvTypeFlags(RV64, RV32)}},
     {CSR_UIP, {"uip", MISCREG_IP, rvTypeFlags(RV64, RV32)}},
+    {CSR_UPKRU, {"upkru", MISCREG_UPKRU, rvTypeFlags(RV64, RV32)}}, // rv64 only
     {CSR_FFLAGS, {"fflags", MISCREG_FFLAGS, rvTypeFlags(RV64, RV32)}},
     {CSR_FRM, {"frm", MISCREG_FRM, rvTypeFlags(RV64, RV32)}},
     {CSR_FCSR, {"fcsr", MISCREG_FFLAGS, rvTypeFlags(RV64, RV32)}}, // Actually FRM << 5 | FFLAGS
