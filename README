@@ -1,11 +1,8 @@
-This is the gem5 simulator.
+FIMI-TEE uses gem5 v23.0.0.0 as the RISC-V simulator
 
-The main website can be found at http://www.gem5.org
 
-A good starting point is http://www.gem5.org/about, and for
-more information about building the simulator and getting started
-please see http://www.gem5.org/documentation and
-http://www.gem5.org/documentation/learning_gem5/introduction.
+Build
+===
 
 To build gem5, you will need the following software: g++ or clang,
 Python (gem5 links in the Python interpreter), SCons, zlib, m4, and lastly
@@ -38,6 +35,4 @@ what type of workload you're trying to run. Many of those resources can be
 downloaded from http://resources.gem5.org, and/or from the git repository here:
 https://gem5.googlesource.com/public/gem5-resources/
 
-If you have questions, please send mail to gem5-users@gem5.org
 
-Enjoy using gem5 and please share your modifications and extensions.
