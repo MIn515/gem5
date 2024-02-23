@@ -78,6 +78,7 @@ enum ExceptionCode : uint64_t
     AMO_ACCESS = 7,
     ECALL_USER = 8,
     ECALL_SUPER = 9,
+    PKRU_ERROR = 10,
     ECALL_MACHINE = 11,
     INST_PAGE = 12,
     LOAD_PAGE = 13,
@@ -151,6 +152,20 @@ class InterruptFault : public RiscvFault
         : RiscvFault("interrupt", FaultType::INTERRUPT, c)
     {}
     InterruptFault(int c) : InterruptFault(static_cast<ExceptionCode>(c)) {}
+};
+
+//PKRU Fault
+class PKRUFault : public RiscvFault
+{
+  public:
+    PKRUFault(ExceptionCode c)
+        : RiscvFault("PKRUE", FaultType::OTHERS, c)
+    {}
+    PKRUFault(int c) : PKRUFault(static_cast<ExceptionCode>(c)) {}
+
+    void PKRUInvoke(ThreadContext *tc) {
+          invoke(tc, nullStaticInstPtr);
+    }
 };
 
 class NonMaskableInterruptFault : public RiscvFault

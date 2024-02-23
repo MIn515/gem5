@@ -111,6 +111,10 @@ class TLB : public BaseTLB
     void serialize(CheckpointOut &cp) const override;
     void unserialize(CheckpointIn &cp) override;
 
+    //PKRU_checker
+    bool PKRUChecker(const RequestPtr &req, ThreadContext *tc, BaseMMU::Mode mode);
+
+
     /**
      * Get the table walker port. This is used for
      * migrating port connections during a CPU takeOverFrom()

@@ -332,12 +332,60 @@ TLB::getMemPriv(ThreadContext *tc, BaseMMU::Mode mode)
     return pmode;
 }
 
+//PKRU register checker
+bool
+TLB::PKRUChecker(const RequestPtr &req, ThreadContext *tc, BaseMMU::Mode mode)
+{
+    uint16_t MASK_PKRU = 0x3FF;
+    uint16_t MASK_W_permission = 0x400;
+
+    //step1:Get PTE
+    Addr PKRU_vaddr = Addr(sext<VADDR_BITS>(req->getVaddr()));
+    SATP PKRU_satp = tc->readMiscReg(MISCREG_SATP);
+    TlbEntry *PKRU_entry = lookup(PKRU_vaddr, PKRU_satp.asid, mode, false);
+    PTESv39 PKRU_pte = PKRU_entry->pte;
+    DPRINTF(TLB, "[PKRU Checker] PKRU_pte=%#x", PKRU_pte);
+
+    //setp2:Get PKRU register
+    RegVal PKRU = tc->readMiscReg(MISCREG_UPKRU);
+    DPRINTF(TLB, "[PKRU Checker] PKRU register=%#x", PKRU);
+
+    //setp3: compare PKRU register and pte.pkru
+    if (PKRU_pte.pkru != 0){
+        for(int i = 0; i < 4; i++) {
+            if (PKRU_pte.pkru != (PKRU & MASK_PKRU)) {
+                PKRU = PKRU >> 11;
+            } else {
+                    if (mode == BaseMMU::Write && !PKRU_pte.w) {
+                        if (!(PKRU & MASK_W_permission)) {
+                            return false;
+                        } else {
+                            return true;
+                        }
+                        
+                    }
+            }
+
+            return false;
+        }
+    }
+}
+
+//  PKRU
 Fault
 TLB::translate(const RequestPtr &req, ThreadContext *tc,
                BaseMMU::Translation *translation, BaseMMU::Mode mode,
                bool &delayed)
 {
+    bool PKRU_Check = 0;
     delayed = false;
+
+    //Doing PKRU checking in MMU translation
+    PKRU_Check = PKRUChecker(req, tc, mode);
+    if(!PKRU_Check){
+        //interrupt invoke
+        PKRUFault(PKRU_ERROR).PKRUInvoke(tc);
+    }
 
     if (FullSystem) {
         PrivilegeMode pmode = getMemPriv(tc, mode);
