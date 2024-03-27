@@ -78,10 +78,10 @@ enum ExceptionCode : uint64_t
     AMO_ACCESS = 7,
     ECALL_USER = 8,
     ECALL_SUPER = 9,
-    PKRU_ERROR = 10,
     ECALL_MACHINE = 11,
     INST_PAGE = 12,
     LOAD_PAGE = 13,
+    PKRU_MISMATCH = 14,
     STORE_PAGE = 15,
     AMO_PAGE = 15,
 
@@ -159,7 +159,7 @@ class PKRUFault : public RiscvFault
 {
   public:
     PKRUFault(ExceptionCode c)
-        : RiscvFault("PKRUE", FaultType::OTHERS, c)
+        : RiscvFault("PKRU_MISMATCH_FAULT", FaultType::OTHERS, c)
     {}
     PKRUFault(int c) : PKRUFault(static_cast<ExceptionCode>(c)) {}
 

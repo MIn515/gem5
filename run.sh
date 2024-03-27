@@ -1,5 +1,9 @@
 
+#! /bin/bash
 
+# Building gem5 separately
+# ===
+#
 # git clone https://github.com/gem5/gem5
 # cd gem5
 # git checkout v23.0.0.0
@@ -13,4 +17,26 @@
 # scons -c
 
 ## run
-./build/RISCV/gem5.opt configs/example/riscv/fs_linux.py --kernel=./image/fw_payload.elf --disk-image=./image/rootfs.ext2 --cpu-type=AtomicSimpleCPU -n=2
+
+if [ $# -eq 0 ]; then
+    set -- "se"
+fi
+
+# Determine script path (do not resolve symbolic links, we want it as given by the user)
+
+SCRIPT_PATH="${BASH_SOURCE[0]}"
+cd `dirname ${SCRIPT_PATH}`
+GEM5_DIR=`pwd`;
+
+case "$1" in
+    se)
+        ./build/RISCV/gem5.opt configs/example/se.py --cmd=${GEM5_DIR}/image/se/test
+        ;;
+    fs)
+        ./build/RISCV/gem5.opt configs/example/riscv/fs_linux.py --kernel=${GEM5_DIR}/image/fs/fw_payload.elf --disk-image=${GEM5_DIR}/image/fs/rootfs.ext2 --cpu-type=AtomicSimpleCPU -n=2
+        ;;
+    *)
+        echo "错误：不支持的参数。" >&2
+        exit 1
+        ;;
+esac
