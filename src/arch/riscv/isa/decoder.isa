@@ -2078,6 +2078,7 @@ decode QUADRANT default Unknown::unknown() {
                                 xc->pcState());
                         }}, IsSerializeAfter, IsNonSpeculative, No_OpClass);
                         0x2: uret({{
+                            xc->setMiscReg(MISCREG_UPKRU,(xc->readMiscReg(MISCREG_UPKRU))&(~(1ULL << 63)));
                             STATUS status = xc->readMiscReg(MISCREG_STATUS);
                             status.uie = status.upie;
                             status.upie = 1;

@@ -112,7 +112,7 @@ class TLB : public BaseTLB
     void unserialize(CheckpointIn &cp) override;
 
     //PKRU_checker
-    bool PKRUChecker(const TlbEntry *e, ThreadContext *tc, BaseMMU::Translation *translation, BaseMMU::Mode mode);
+    bool PKRUChecker(const PTESv39 PKRU_pte, RegVal PKRU, PrivilegeMode pmode, BaseMMU::Mode mode);
 
 
     /**

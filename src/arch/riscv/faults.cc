@@ -43,7 +43,7 @@
 #include "sim/debug.hh"
 #include "sim/full_system.hh"
 #include "sim/workload.hh"
-
+#include "debug/PKRU.hh"
 namespace gem5
 {
 
@@ -75,7 +75,9 @@ RiscvFault::invoke(ThreadContext *tc, const StaticInstPtr &inst)
         // we'll just warn our user that the CPU state might be broken.
         warn_if(isNonMaskableInterrupt() && pp == PRV_M && status.mie == 0,
                 "NMI overwriting M-mode trap handler state");
-
+        if (_code == PKRU_MISMATCH)
+            DPRINTFS(PKRU, tc->getCpuPtr(), "PKRU_MISMATCH Fault (%s) at PC: %s\n",
+             name(), pc_state);
         // Set fault handler privilege mode
         if (isNonMaskableInterrupt()) {
             prv = PRV_M;
@@ -96,6 +98,16 @@ RiscvFault::invoke(ThreadContext *tc, const StaticInstPtr &inst)
             if (pp == PRV_U &&
                 bits(tc->readMiscReg(MISCREG_SEDELEG), _code) != 0) {
                 prv = PRV_U;
+                // if mode ==1 , handle in s-mode
+                if ((tc->readMiscReg(MISCREG_UPKRU)) >> 63){
+                    DPRINTF(PKRU, "mode ==1 , unset pkru-error delegation\n");
+                    uint64_t MASK_IGNORE = 1U << PKRU_MISMATCH;
+                    MASK_IGNORE |= 1U << ECALL_USER;
+                    RegVal sedeleg = tc->readMiscReg(MISCREG_SEDELEG);
+                    sedeleg &= ~(MASK_IGNORE);
+                    tc->setMiscReg(MISCREG_SEDELEG, sedeleg);
+                    prv = PRV_S;
+                }
             }
         }
 
@@ -103,6 +115,11 @@ RiscvFault::invoke(ThreadContext *tc, const StaticInstPtr &inst)
         MiscRegIndex cause, epc, tvec, tval;
         switch (prv) {
           case PRV_U:
+            if ((_code == PKRU_MISMATCH) || (_code == ECALL_USER)){
+                tc->setMiscReg(MISCREG_UPKRU,(tc->readMiscReg(MISCREG_UPKRU)) | (1ULL << 63)); // mode set to 1
+                DPRINTF(PKRU, "Fault is (%d) ,set mode to 1\n", _code);
+            }
+            DPRINTF(PKRU, "delegation to user mode\n");
             cause = MISCREG_UCAUSE;
             epc = MISCREG_UEPC;
             tvec = MISCREG_UTVEC;
@@ -159,6 +176,8 @@ RiscvFault::invoke(ThreadContext *tc, const StaticInstPtr &inst)
         // Set PC to fault handler address
         Addr addr = mbits(tc->readMiscReg(tvec), 63, 2);
         if (isInterrupt() && bits(tc->readMiscReg(tvec), 1, 0) == 1)
+            addr += 4 * _code;
+        else if (!isInterrupt() && (prv == PRV_U) && ((_code == PKRU_MISMATCH) || (_code == ECALL_USER)))
             addr += 4 * _code;
         pc_state.set(addr);
         tc->pcState(pc_state);
