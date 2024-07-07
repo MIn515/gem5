@@ -154,19 +154,20 @@ class InterruptFault : public RiscvFault
     InterruptFault(int c) : InterruptFault(static_cast<ExceptionCode>(c)) {}
 };
 
-//PKRU Fault
-class PKRUFault : public RiscvFault
-{
-  public:
-    PKRUFault(ExceptionCode c)
-        : RiscvFault("PKRU_MISMATCH_FAULT", FaultType::OTHERS, c)
-    {}
-    PKRUFault(int c) : PKRUFault(static_cast<ExceptionCode>(c)) {}
+// TODO: did we need a pkru falut class??
+// //PKRU Fault
+// class PKRUFault : public RiscvFault
+// {
+//   public:
+//     PKRUFault(ExceptionCode c)
+//         : RiscvFault("PKRU_MISMATCH_FAULT", FaultType::OTHERS, c)
+//     {}
+//     PKRUFault(int c) : PKRUFault(static_cast<ExceptionCode>(c)) {}
 
-    void PKRUInvoke(ThreadContext *tc) {
-          invoke(tc, nullStaticInstPtr);
-    }
-};
+//     void PKRUInvoke(ThreadContext *tc) {
+//           invoke(tc, nullStaticInstPtr);
+//     }
+// };
 
 class NonMaskableInterruptFault : public RiscvFault
 {
