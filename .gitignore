@@ -1,4 +1,9 @@
 build
+image/
+configs/
+*.sh
+build-back
+build-back2
 parser.out
 parsetab.py
 cscope.files
